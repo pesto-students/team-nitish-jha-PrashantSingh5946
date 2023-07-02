@@ -19,42 +19,51 @@ const handleFormSubmit = (event) => {
   generateQuote(input);
 };
 
-function generateQuote(topic) {
+async function generateQuote(topic) {
   document.getElementById("results").innerHTML = loader;
 
-  fetch("https://api.openai.com/v1/engines/text-davinci-003/completions", {
-    method: "POST",
-    headers: {
-      Authorization:
-        "Bearer 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",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prompt: `give me 5 quotes on ${topic} in the form of json array only containing the quotes`,
-      max_tokens: 2000,
-      n: 1,
-      stop: null,
-      temperature: 0.7,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    }),
-  })
-    .then(function (response) {
-      return response.json();
-    })
-    .then(function (data) {
-      document.getElementById("results").innerHTML = "";
-      let response = JSON.parse(data.choices[0].text);
+  let request = fetch(
+    "https://api.openai.com/v1/engines/text-davinci-003/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Bearer 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",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: `give me 5 quotes on ${topic} in the form of json array only containing the quotes`,
+        max_tokens: 2000,
+        n: 1,
+        stop: null,
+        temperature: 0.7,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      }),
+    }
+  );
 
-      response.forEach((quote) => {
-        let data = quote.trim();
-        document.getElementById("results").innerHTML += `<p>${data}</p>`;
-      });
-    })
-    .catch(function (error) {
-      console.log(error);
+  try {
+    let response = await request;
+
+    console.log(response);
+
+    let data = await response.json();
+
+    console.log(data);
+
+    document.getElementById("results").innerHTML = "";
+    response = JSON.parse(data.choices[0].text);
+
+    response.forEach((quote) => {
+      let data = quote.trim();
+      document.getElementById("results").innerHTML += `<p>${data}</p>`;
     });
+  } catch (error) {
+    console.log(error);
+    document.getElementById("results").innerHTML = "";
+  }
 }
 
 // Capitalize the first letter of a string
