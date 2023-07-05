@@ -11,6 +11,8 @@ let loader = `<div class="center">
   <div class="wave"></div>
 </div>`;
 
+let cache = {};
+
 const handleFormSubmit = (event) => {
   event.preventDefault();
   let searchBox = event.target.children[0];
@@ -22,36 +24,43 @@ const handleFormSubmit = (event) => {
 async function generateQuote(topic) {
   document.getElementById("results").innerHTML = loader;
 
-  let request = fetch(
-    "https://api.openai.com/v1/engines/text-davinci-003/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Bearer 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",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: `give me 5 quotes on ${topic} in the form of json array only containing the quotes`,
-        max_tokens: 2000,
-        n: 1,
-        stop: null,
-        temperature: 0.7,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-      }),
-    }
-  );
-
   try {
-    let response = await request;
+    let data = null;
 
-    console.log(response);
+    if (!cache.hasOwnProperty(topic)) {
+      let request = fetch(
+        "https://api.openai.com/v1/engines/text-davinci-003/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              "Bearer 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",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: `give me 5 quotes on ${topic} in the form of json array only containing the quotes`,
+            max_tokens: 2000,
+            n: 1,
+            stop: null,
+            temperature: 0.7,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+          }),
+        }
+      );
+      let response = await request;
 
-    let data = await response.json();
+      console.log(response);
 
-    console.log(data);
+      data = await response.json();
+
+      cache[topic] = data;
+
+      console.log(data);
+    } else {
+      data = cache[topic];
+    }
 
     document.getElementById("results").innerHTML = "";
     response = JSON.parse(data.choices[0].text);
